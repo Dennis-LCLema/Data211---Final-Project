@@ -1,0 +1,89 @@
+---
+title: "Final Project"
+author: "Dennis Campoverde-Lema"
+date: "2024-04-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+
+
+screen_data <- read_xlsx("C:/Users/Dennis Campoverde-Le/Desktop/Metro HW/Spring 2024/Data Science and Visualization- DATA 211 - Section 50/Final_Project/Phone_Screen_Time_Data.xlsx")
+
+str(screen_data)
+```
+
+
+```{r}
+str(screen_data)
+
+screen_data$Date <- as.Date(screen_data$Date)
+screen_data$Social_Media <- as.numeric(screen_data$Social_Media)
+screen_data$Other <- as.numeric(screen_data$Other)
+screen_data$Total_screen_time <- as.numeric(screen_data$Total_screen_time)
+```
+
+```{r}
+ggplot(screen_data, aes(x = Date, y = `Total_screen_time`, group = 1)) +
+  geom_line() +
+  geom_point() + 
+  scale_x_date(date_labels = "%b-%d", date_breaks = "1 day") +
+  labs(title = "Total Screen Time Per Day",
+       x = "Date",
+       y = "Total Screen Time (hours)") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+
+
+```
+
+
+```{r}
+
+screen_data_long <- screen_data %>%
+  pivot_longer(cols = c(Streaming, Socail_Media, Other), names_to = "Category", values_to = "Time")
+
+str(screen_data_long)
+
+ggplot(screen_data_long, aes(x = as.Date(Date), y = Time, fill = Category)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Screen Time Distribution by Category",
+       x = "Date",
+       y = "Time (hours)") +
+  scale_x_date(date_labels = "%b-%d", date_breaks = "1 day") +
+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+```
+
+
+```{r}
+ggplot(screen_data, aes(x = DayType, y = Total_screen_time)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Total Screen Time by Day Type",
+       x = "Day Type",
+       y = "Total Screen Time (hours)") +
+  theme_light()
+```
+
+
+```{r}
+screen_data$DayType <- ifelse(weekdays(as.Date(screen_data$Date)) %in% c("Saturday", "Sunday"), "Weekend", "Weekday")
+
+t_test_result <- t.test(Total_screen_time ~ DayType, data = screen_data)
+
+print(t_test_result)
+
+```
+we fail to reject null hypothesis 
